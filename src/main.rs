@@ -22,7 +22,15 @@ fn main() -> xcb::Result<()> {
             x::Cw::EventMask(x::EventMask::EXPOSURE | x::EventMask::KEY_PRESS),
         ],
     });
+    conn.check_request(cookie)?;
 
+    let cookie = conn.send_request_checked(&x::ChangeProperty {
+        mode: x::PropMode::Replace,
+        window,
+        property: x::ATOM_WM_NAME,
+        r#type: x::ATOM_STRING,
+        data: "rust_notepad".as_bytes(),
+    });
     conn.check_request(cookie)?;
 
     conn.send_request(&x::MapWindow { window });
