@@ -6,7 +6,7 @@ fn main() -> xcb::Result<()> {
 
     let window: x::Window = conn.generate_id();
 
-    conn.send_request(&x::CreateWindow {
+    let cookie = conn.send_request_checked(&x::CreateWindow {
         depth: x::COPY_FROM_PARENT as u8,
         wid: window,
         parent: screen.root(),
@@ -22,6 +22,8 @@ fn main() -> xcb::Result<()> {
             x::Cw::EventMask(x::EventMask::EXPOSURE | x::EventMask::KEY_PRESS),
         ],
     });
+
+    conn.check_request(cookie)?;
 
     conn.send_request(&x::MapWindow { window });
 
