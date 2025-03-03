@@ -33,9 +33,8 @@ fn main() -> xcb::Result<()> {
     });
     conn.check_request(cookie)?;
 
-    conn.send_request(&x::MapWindow { window });
-
-    conn.flush()?;
+    let cookie = conn.send_request_checked(&x::MapWindow { window });
+    conn.check_request(cookie)?;
 
     loop {
         match conn.wait_for_event()? {
