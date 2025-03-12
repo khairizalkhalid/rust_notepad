@@ -38,8 +38,8 @@ fn main() -> xcb::Result<()> {
 
     loop {
         match conn.wait_for_event()? {
-            xcb::Event::X(x::Event::KeyPress(e)) => {
-                println!("e {:?}", e)
+            xcb::Event::X(x::Event::KeyPress(ev)) => {
+                println!("detail 0x{:x}, state 0x{:x}", ev.detail(), ev.state())
             }
             _ => {}
         }
