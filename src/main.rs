@@ -36,6 +36,23 @@ fn main() -> xcb::Result<()> {
     let cookie = conn.send_request_checked(&x::MapWindow { window });
     conn.check_request(cookie)?;
 
+    let (wm_protocols, wm_del_window) = {
+        let cookies = (
+            conn.send_request(&x::InternAtom {
+                only_if_exists: true,
+                name: "WM_PROTOCOLS".as_bytes(),
+            }),
+            conn.send_request(&x::InternAtom {
+                only_if_exists: true,
+                name: "WM_DELETE_WINDOW".as_bytes(),
+            }),
+        );
+        (
+            conn.wait_for_reply(cookies.0)?.atom(),
+            conn.wait_for_reply(cookies.1)?.atom(),
+        )
+    };
+
     loop {
         match conn.wait_for_event()? {
             xcb::Event::X(x::Event::KeyPress(ev)) => {
