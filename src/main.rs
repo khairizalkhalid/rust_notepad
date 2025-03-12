@@ -1,4 +1,4 @@
-use xcb::{x, Connection};
+use xcb::{x, Connection, Xid};
 
 fn main() -> xcb::Result<()> {
     let (conn, _) = Connection::connect(None)?;
@@ -65,6 +65,13 @@ fn main() -> xcb::Result<()> {
         match conn.wait_for_event()? {
             xcb::Event::X(x::Event::KeyPress(ev)) => {
                 println!("detail 0x{:x}, state 0x{:x}", ev.detail(), ev.state())
+            }
+            xcb::Event::X(x::Event::ClientMessage(ev)) => {
+                if let x::ClientMessageData::Data32([atom, ..]) = ev.data() {
+                    if atom == wm_del_window.resource_id() {
+                        break Ok(());
+                    }
+                }
             }
             _ => {}
         }
