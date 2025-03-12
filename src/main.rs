@@ -53,6 +53,14 @@ fn main() -> xcb::Result<()> {
         )
     };
 
+    conn.check_request(conn.send_request_checked(&x::ChangeProperty {
+        mode: x::PropMode::Replace,
+        window,
+        property: wm_protocols,
+        r#type: x::ATOM_ATOM,
+        data: &[wm_del_window],
+    }))?;
+
     loop {
         match conn.wait_for_event()? {
             xcb::Event::X(x::Event::KeyPress(ev)) => {
