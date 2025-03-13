@@ -61,6 +61,16 @@ fn main() -> xcb::Result<()> {
         data: &[wm_del_window],
     }))?;
 
+    let gc = conn.generate_id();
+    conn.check_request(conn.send_request_checked(&x::CreateGc {
+        cid: gc,
+        drawable: x::Drawable::Window(window),
+        value_list: &[
+            x::Gc::Foreground(screen.black_pixel()),
+            x::Gc::Background(screen.white_pixel()),
+        ],
+    }))?;
+
     let mut string_buffer: Vec<u8> = Vec::new();
 
     loop {
