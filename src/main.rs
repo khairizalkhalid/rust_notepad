@@ -78,6 +78,16 @@ fn main() -> xcb::Result<()> {
             xcb::Event::X(x::Event::KeyPress(ev)) => {
                 string_buffer.push(ev.detail());
                 println!("{:?}", string_buffer);
+
+                conn.send_request(&x::ImageText8 {
+                    drawable: x::Drawable::Window(window),
+                    gc,
+                    x: 10,
+                    y: 20,
+                    string: &string_buffer,
+                });
+
+                let _ = conn.flush();
             }
             xcb::Event::X(x::Event::ClientMessage(ev)) => {
                 if let x::ClientMessageData::Data32([atom, ..]) = ev.data() {
