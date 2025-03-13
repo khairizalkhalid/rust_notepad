@@ -61,10 +61,13 @@ fn main() -> xcb::Result<()> {
         data: &[wm_del_window],
     }))?;
 
+    let mut string_buffer: Vec<u8> = Vec::new();
+
     loop {
         match conn.wait_for_event()? {
             xcb::Event::X(x::Event::KeyPress(ev)) => {
-                println!("detail 0x{:x}, state 0x{:x}", ev.detail(), ev.state())
+                string_buffer.push(ev.detail());
+                println!("{:?}", string_buffer);
             }
             xcb::Event::X(x::Event::ClientMessage(ev)) => {
                 if let x::ClientMessageData::Data32([atom, ..]) = ev.data() {
