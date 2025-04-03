@@ -1,4 +1,5 @@
 use xcb::{x, Connection, Xid};
+use xkbcommon::xkb;
 
 fn main() -> xcb::Result<()> {
     let (conn, _) = Connection::connect(None)?;
@@ -71,23 +72,33 @@ fn main() -> xcb::Result<()> {
         ],
     }))?;
 
+    let context = xkb::Context::new(xkb::CONTEXT_NO_FLAGS);
+    let keymap =
+        xkb::Keymap::new_from_names(&context, "", "", "", "", None, xkb::KEYMAP_COMPILE_NO_FLAGS)
+            .unwrap();
+    let state = xkb::State::new(&keymap);
+
     let mut string_buffer: Vec<u8> = Vec::new();
 
     loop {
         match conn.wait_for_event()? {
             xcb::Event::X(x::Event::KeyPress(ev)) => {
-                string_buffer.push(ev.detail());
-                println!("{:?}", string_buffer);
+                let keycode: xkb::Keycode = ev.detail().into();
+                let keysym = state.key_get_one_sym(keycode);
 
-                conn.send_request(&x::ImageText8 {
-                    drawable: x::Drawable::Window(window),
-                    gc,
-                    x: 10,
-                    y: 20,
-                    string: &string_buffer,
-                });
+                if let Some(ch) = std::char::from_u32(keysym.into()) {
+                    string_buffer.push(ch as u8);
 
-                let _ = conn.flush();
+                    conn.send_request(&x::ImageText8 {
+                        drawable: x::Drawable::Window(window),
+                        gc,
+                        x: 10,
+                        y: 20,
+                        string: &string_buffer,
+                    });
+
+                    let _ = conn.flush();
+                }
             }
             xcb::Event::X(x::Event::ClientMessage(ev)) => {
                 if let x::ClientMessageData::Data32([atom, ..]) = ev.data() {
