@@ -87,7 +87,12 @@ fn main() -> xcb::Result<()> {
                 let keysym = state.key_get_one_sym(keycode);
 
                 if let Some(ch) = std::char::from_u32(keysym.into()) {
-                    string_buffer.push(ch as u8);
+                    let ch_u8 = ch as u8;
+                    if ch_u8 == 8 {
+                        string_buffer.pop();
+                    } else {
+                        string_buffer.push(ch_u8);
+                    }
 
                     conn.send_request(&x::ImageText8 {
                         drawable: x::Drawable::Window(window),
