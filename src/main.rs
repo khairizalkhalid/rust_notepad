@@ -94,6 +94,15 @@ fn main() -> xcb::Result<()> {
                         string_buffer.push(ch_u8);
                     }
 
+                    conn.send_request(&x::ClearArea {
+                        window,
+                        x: 0,
+                        y: 0,
+                        width: 0,
+                        height: 0,
+                        exposures: false,
+                    });
+
                     conn.send_request(&x::ImageText8 {
                         drawable: x::Drawable::Window(window),
                         gc,
