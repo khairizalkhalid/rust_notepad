@@ -2,6 +2,12 @@ use xcb::{x, Connection, Xid};
 use xkbcommon::xkb;
 
 fn main() -> xcb::Result<()> {
+    const WINDOW_WIDTH: u16 = 150;
+    const CHAR_WIDTH: u16 = 8;
+    const LINE_HEIGHT: i16 = 16;
+
+    let chars_per_line = (WINDOW_WIDTH / CHAR_WIDTH) as usize;
+
     let (conn, _) = Connection::connect(None)?;
     let screen = conn.get_setup().roots().nth(0).unwrap();
 
@@ -13,7 +19,7 @@ fn main() -> xcb::Result<()> {
         parent: screen.root(),
         x: 0,
         y: 0,
-        width: 150,
+        width: WINDOW_WIDTH,
         height: 150,
         border_width: 1,
         class: x::WindowClass::InputOutput,
@@ -94,6 +100,8 @@ fn main() -> xcb::Result<()> {
                         string_buffer.push(ch_u8);
                     }
 
+                    let lines: Vec<&[u8]> = string_buffer.chunks(chars_per_line).collect();
+
                     conn.send_request(&x::ClearArea {
                         window,
                         x: 0,
@@ -103,13 +111,15 @@ fn main() -> xcb::Result<()> {
                         exposures: false,
                     });
 
-                    conn.send_request(&x::ImageText8 {
-                        drawable: x::Drawable::Window(window),
-                        gc,
-                        x: 10,
-                        y: 20,
-                        string: &string_buffer,
-                    });
+                    for (i, line) in lines.iter().enumerate() {
+                        conn.send_request(&x::ImageText8 {
+                            drawable: x::Drawable::Window(window),
+                            gc,
+                            x: 10,
+                            y: 20 + (i as i16) * LINE_HEIGHT,
+                            string: line,
+                        });
+                    }
 
                     let _ = conn.flush();
                 }
