@@ -145,5 +145,13 @@ fn main() -> xcb::Result<()> {
             .unwrap();
     let state = xkb::State::new(&keymap);
 
-    event_loop(&conn, window, gc, &state, wm_del_window.resource_id(), chars_per_line, LINE_HEIGHT)
+    event_loop(
+        &conn,
+        window,
+        gc,
+        &state,
+        wm_del_window.resource_id(),
+        chars_per_line,
+        LINE_HEIGHT,
+    )
 }
